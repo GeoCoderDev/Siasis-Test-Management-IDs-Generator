@@ -12,7 +12,7 @@ const app: Application = express();
 
 // Configuración de la aplicación
 const config: AppConfig = {
-  port: parseInt(process.env.PORT || "4001", 10),
+  port: parseInt(process.env.PORT || "6000", 10),
   secretKey: process.env.SECRET_ACCESS_GENERATOR_KEY || "",
   databaseUrl: process.env.DATABASE_URL || "",
   nodeEnv: process.env.NODE_ENV || "development",
