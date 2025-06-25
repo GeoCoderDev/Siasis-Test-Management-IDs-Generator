@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Generador de Códigos SIASIS</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #2563eb 0%, #059669 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 15px;
+        margin: 0;
+      }
+
+      .container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        width: 100%;
+        max-width: 1200px;
+        text-align: center;
+      }
+
+      .header {
+        margin-bottom: 15px;
+      }
+
+      .header h1 {
+        color: #333;
+        font-size: 1.8rem;
+        margin-bottom: 3px;
+        background: linear-gradient(135deg, #2563eb, #059669);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .header p {
+        color: #666;
+        font-size: 0.85rem;
+        margin-bottom: 10px;
+      }
+
+      .main-content {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 20px;
+        align-items: start;
+        margin-bottom: 15px;
+      }
+
+      .config-section {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        border-left: 4px solid #2563eb;
+        text-align: left;
+      }
+
+      .config-section h3 {
+        color: #333;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.9rem;
+      }
+
+      .input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-bottom: 0;
+      }
+
+      .input-group label {
+        font-weight: 600;
+        color: #555;
+        font-size: 0.8rem;
+      }
+
+      .input-group input {
+        padding: 8px;
+        border: 2px solid #e5e7eb;
+        border-radius: 6px;
+        font-size: 13px;
+        transition: border-color 0.3s ease;
+      }
+
+      .input-group input:focus {
+        outline: none;
+        border-color: #2563eb;
+      }
+
+      .buttons-section {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .buttons-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+
+      .artifact-button {
+        background: linear-gradient(135deg, #2563eb, #059669);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 12px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 3px 10px rgba(37, 99, 235, 0.3);
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+      }
+
+      .artifact-button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 5px 15px rgba(37, 99, 235, 0.4);
+      }
+
+      .artifact-button:active {
+        transform: translateY(0);
+      }
+
+      .artifact-button::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        transition: left 0.5s;
+      }
+
+      .artifact-button:hover::before {
+        left: 100%;
+      }
+
+      .artifact-button .icon {
+        font-size: 1.2rem;
+        margin-bottom: 4px;
+        display: block;
+      }
+
+      .artifact-button .label {
+        display: block;
+        margin-bottom: 2px;
+        font-size: 0.8rem;
+      }
+
+      .artifact-button .code {
+        font-size: 0.7rem;
+        opacity: 0.8;
+        font-family: "Courier New", monospace;
+      }
+
+      .status-section {
+        text-align: center;
+        padding: 10px;
+        background: #f3f4f6;
+        border-radius: 8px;
+      }
+
+      .status-button {
+        background: #1f2937;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 6px 12px;
+        cursor: pointer;
+        font-size: 12px;
+        transition: background 0.3s ease;
+        margin-bottom: 8px;
+      }
+
+      .status-button:hover {
+        background: #374151;
+      }
+
+      .results {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 12px;
+        margin-top: 15px;
+        border-left: 4px solid #10b981;
+        display: none;
+        grid-column: 1 / -1;
+      }
+
+      .results h3,
+      .results h4 {
+        color: #333;
+        margin-bottom: 10px;
+        font-size: 1rem;
+      }
+
+      .results.show {
+        display: block;
+        animation: slideIn 0.3s ease;
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .code-result {
+        background: #1f2937;
+        color: #10b981;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-family: "Courier New", monospace;
+        font-size: 0.95rem;
+        font-weight: bold;
+        margin: 8px 0;
+        text-align: center;
+        border: 2px solid #10b981;
+        box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+        display: inline-block;
+      }
+
+      .codigo-info {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        font-size: 0.85rem;
+        color: #555;
+        margin-top: 8px;
+        flex-wrap: wrap;
+      }
+
+      .codigo-info span {
+        background: #f3f4f6;
+        padding: 4px 8px;
+        border-radius: 4px;
+        border: 1px solid #e5e7eb;
+      }
+
+      @media (max-width: 480px) {
+        .codigo-info {
+          flex-direction: column;
+          gap: 6px;
+          align-items: center;
+        }
+      }
+
+      .error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+        border-radius: 6px;
+        padding: 10px;
+        margin: 8px 0;
+      }
+
+      .loading {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #2563eb;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-right: 6px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .brand-footer {
+        margin-top: 10px;
+        text-align: center;
+        font-size: 0.7rem;
+        color: #6b7280;
+      }
+
+      /* Estilos para el estado de contadores */
+      .contadores-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+        margin-bottom: 15px;
+      }
+
+      .contador-item {
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 12px;
+        text-align: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+
+      .contador-item:hover {
+        border-color: #2563eb;
+        box-shadow: 0 4px 8px rgba(37, 99, 235, 0.1);
+      }
+
+      .contador-tipo {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #2563eb;
+        margin-bottom: 6px;
+        padding: 4px 8px;
+        background: linear-gradient(135deg, #2563eb15, #05966915);
+        border-radius: 4px;
+      }
+
+      .contador-actual {
+        font-size: 0.9rem;
+        color: #374151;
+        margin-bottom: 4px;
+      }
+
+      .contador-proximo {
+        font-size: 0.8rem;
+        color: #6b7280;
+        font-family: "Courier New", monospace;
+      }
+
+      .timestamp {
+        margin-top: 15px;
+        font-size: 0.8rem;
+        color: #6b7280;
+        text-align: center;
+        border-top: 1px solid #e5e7eb;
+        padding-top: 10px;
+      }
+
+      /* Responsive para contadores */
+      @media (max-width: 768px) {
+        .contadores-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 8px;
+        }
+
+        .contador-item {
+          padding: 10px;
+        }
+
+        .contador-tipo {
+          font-size: 1rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .contadores-grid {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      /* Media Queries para Responsive */
+      @media (max-width: 1024px) {
+        .main-content {
+          grid-template-columns: 1fr;
+          gap: 15px;
+        }
+
+        .config-section {
+          text-align: center;
+        }
+
+        .input-group {
+          flex-direction: row;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .input-group label {
+          min-width: 90px;
+          text-align: left;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 15px;
+          margin: 10px;
+        }
+
+        .header h1 {
+          font-size: 1.6rem;
+        }
+
+        .header p {
+          font-size: 0.8rem;
+        }
+
+        .main-content {
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+
+        .buttons-grid {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+
+        .input-group {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .input-group label {
+          min-width: auto;
+          text-align: center;
+          margin-bottom: 4px;
+        }
+
+        .artifact-button {
+          padding: 15px;
+        }
+
+        .artifact-button .icon {
+          font-size: 1.4rem;
+          margin-bottom: 6px;
+        }
+
+        .artifact-button .label {
+          font-size: 0.9rem;
+          margin-bottom: 3px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        body {
+          padding: 10px;
+        }
+
+        .container {
+          padding: 12px;
+        }
+
+        .header h1 {
+          font-size: 1.4rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🔧 Generador de Códigos SIASIS</h1>
+        <p>
+          Sistema de generación automática de códigos únicos para artefactos de
+          testing
+        </p>
+      </div>
+
+      <div class="main-content">
+        <div class="config-section">
+          <h3>⚙️ Configuración de Acceso</h3>
+          <div class="input-group">
+            <label for="authToken">Token de Acceso:</label>
+            <input
+              type="password"
+              id="authToken"
+              placeholder="Ingrese su token de autorización"
+            />
+          </div>
+        </div>
+
+        <div class="buttons-section">
+          <div class="buttons-grid">
+            <button class="artifact-button" onclick="generarCodigo('TP')">
+              <span class="icon">📋</span>
+              <span class="label">Test Plan</span>
+              <span class="code">SIASIS-TP-*</span>
+            </button>
+
+            <button class="artifact-button" onclick="generarCodigo('TE')">
+              <span class="icon">▶️</span>
+              <span class="label">Test Execution</span>
+              <span class="code">SIASIS-TE-*</span>
+            </button>
+
+            <button class="artifact-button" onclick="generarCodigo('TC')">
+              <span class="icon">✅</span>
+              <span class="label">Test Case</span>
+              <span class="code">SIASIS-TC-*</span>
+            </button>
+
+            <button class="artifact-button" onclick="generarCodigo('BUG')">
+              <span class="icon">🐛</span>
+              <span class="label">Bug Report</span>
+              <span class="code">SIASIS-BUG-*</span>
+            </button>
+          </div>
+
+          <div class="status-section">
+            <button class="status-button" onclick="verEstadoContadores()">
+              📊 Ver Estado de Contadores
+            </button>
+            <div class="brand-footer">
+              🔧 SIASIS Testing Tools v1.0 | Generador de Códigos de Artefactos
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="results" class="results">
+        <h3>Resultado:</h3>
+        <div id="resultContent"></div>
+      </div>
+    </div>
+
+    <script>
+      // Configuración interna de la API
+      // La URL base está configurada internamente por seguridad
+      const API_BASE_URL =
+        "https://siasis-api-test-artifacts-ids-gener.vercel.app";
+
+      // Función para obtener configuración de la interfaz
+      function getConfig() {
+        const authToken = document.getElementById("authToken").value.trim();
+
+        if (!authToken) {
+          throw new Error("El token de autorización es requerido");
+        }
+
+        return { apiUrl: API_BASE_URL, authToken };
+      }
+
+      // Función para mostrar loading
+      function showLoading(button) {
+        const originalContent = button.innerHTML;
+        button.innerHTML = '<span class="loading"></span>Generando...';
+        button.disabled = true;
+        return originalContent;
+      }
+
+      // Función para restaurar botón
+      function restoreButton(button, originalContent) {
+        button.innerHTML = originalContent;
+        button.disabled = false;
+      }
+
+      // Función para mostrar resultados
+      function showResult(content, isError = false) {
+        const results = document.getElementById("results");
+        const resultContent = document.getElementById("resultContent");
+
+        if (isError) {
+          resultContent.innerHTML = `<div class="error">${content}</div>`;
+        } else {
+          resultContent.innerHTML = content;
+        }
+
+        results.classList.add("show");
+        results.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+
+      // Función principal para generar código
+      async function generarCodigo(tipoArtefacto) {
+        const button = event.target.closest(".artifact-button");
+        const originalContent = showLoading(button);
+
+        try {
+          const { apiUrl, authToken } = getConfig();
+
+          const url = `${apiUrl}/contador/generar?TipoDeArtefacto=${tipoArtefacto}`;
+          const response = await fetch(url, {
+            method: "GET",
+            headers: {
+              Authorization: authToken,
+              "Content-Type": "application/json",
+            },
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            const resultHtml = `
+                        <div class="code-result">${data.codigo}</div>
+                        <div class="codigo-info">
+                            <span><strong>Tipo:</strong> ${data.tipo}</span>
+                            <span><strong>Número:</strong> ${data.numero}</span>
+                            <span><strong>Generado:</strong> ${new Date(
+                              data.timestamp
+                            ).toLocaleString()}</span>
+                        </div>
+                    `;
+            showResult(resultHtml);
+          } else {
+            throw new Error(data.message || "Error al generar código");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          showResult(`Error: ${error.message}`, true);
+        } finally {
+          restoreButton(button, originalContent);
+        }
+      }
+
+      // Función para ver estado de contadores
+      async function verEstadoContadores() {
+        const button = event.target;
+        const originalText = button.textContent;
+        button.innerHTML = '<span class="loading"></span>Consultando...';
+        button.disabled = true;
+
+        try {
+          const { apiUrl, authToken } = getConfig();
+
+          const url = `${apiUrl}/contador/estado`;
+          const response = await fetch(url, {
+            method: "GET",
+            headers: {
+              Authorization: authToken,
+              "Content-Type": "application/json",
+            },
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            let estadoHtml =
+              '<h4 style="margin-bottom: 15px;">📊 Estado Actual de Contadores:</h4>';
+
+            estadoHtml += '<div class="contadores-grid">';
+
+            data.contadores.forEach((contador) => {
+              estadoHtml += `
+                            <div class="contador-item">
+                                <div class="contador-tipo">${contador.tipo}</div>
+                                <div class="contador-actual">Actual: ${contador.valorActual}</div>
+                                <div class="contador-proximo">Próximo: ${contador.proximoCodigo}</div>
+                            </div>
+                        `;
+            });
+
+            estadoHtml += "</div>";
+            estadoHtml += `<p class="timestamp">Última actualización: ${new Date(
+              data.timestamp
+            ).toLocaleString()}</p>`;
+
+            showResult(estadoHtml);
+          } else {
+            throw new Error(data.message || "Error al consultar estado");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          showResult(`Error: ${error.message}`, true);
+        } finally {
+          button.textContent = originalText;
+          button.disabled = false;
+        }
+      }
+
+      // Auto-focus en el primer campo al cargar
+      document.addEventListener("DOMContentLoaded", function () {
+        // Configuración predeterminada
+        const authTokenInput = document.getElementById("authToken");
+        authTokenInput.focus();
+
+        // Cargar configuración guardada del localStorage (solo token)
+        const savedConfig = localStorage.getItem("siasisConfig");
+        if (savedConfig) {
+          try {
+            const config = JSON.parse(savedConfig);
+            if (config.authToken)
+              document.getElementById("authToken").value = config.authToken;
+          } catch (e) {
+            console.warn("No se pudo cargar la configuración guardada");
+          }
+        }
+
+        // Guardar configuración cuando cambie (solo token)
+        document
+          .getElementById("authToken")
+          .addEventListener("change", function () {
+            const config = {
+              authToken: document.getElementById("authToken").value,
+            };
+            localStorage.setItem("siasisConfig", JSON.stringify(config));
+          });
+      });
+    </script>
+  </body>
+</html>
